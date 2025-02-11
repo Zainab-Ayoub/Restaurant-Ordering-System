@@ -51,7 +51,7 @@ class Customer : public User{
         } 
 };
 
-class Admin : public User{
+class Admin : protected User{
     public:
         void addMenuItem(){
 
