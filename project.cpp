@@ -2,143 +2,256 @@
 #include <string>
 using namespace std;
 
-class Item{
+// User class for authentication
+class User {
+protected:
+    string username;
+    string password;
+    
+public:
+    User() : username(""), password("") {}
+    
+    User(const string& username, const string& password) : username(username), password(password) {}
+    
+    bool authenticate(const string& inputPassword) {
+        return password == inputPassword;
+    }
+    
+    string getUsername() const {
+        return username;
+    }
+};
+
+// Owner class inherits from User
+class Owner : public User {
+public:
+    Owner() : User() {}
+    
+    Owner(const string& username, const string& password) : User(username, password) {}
+};
+
+// Customer class inherits from User
+class Customer : public User {
 private:
+    string address;
+    
+public:
+    Customer() : User(), address("") {}
+    
+    Customer(const string& username, const string& password, const string& address = "") 
+        : User(username, password), address(address) {}
+    
+    void setAddress(const string& newAddress) {
+        address = newAddress;
+    }
+    
+    string getAddress() const {
+        return address;
+    }
+};
+
+// Item class to represent menu items
+class Item {
+private:
+    int id;
     string name;
     float price;
     bool available;
-    int id;
     
 public:
-    Item(){
-        name = "";
-        price = 0;
-        available = true;
-        id = 0;
-    }
+    Item() : id(0), name(""), price(0), available(true) {}
     
-    Item(int itemId, string itemName, float itemPrice){
-        id = itemId;
-        name = itemName;
-        price = itemPrice;
-        available = true;
-    }
+    Item(int itemId, const string& itemName, float itemPrice) 
+        : id(itemId), name(itemName), price(itemPrice), available(true) {}
     
-    void addItem(int itemId){
+    void addItem(int itemId) {
         id = itemId;
-        cout<<"Enter item name: ";
+        cout << "Enter item name: ";
         cin.ignore();
         getline(cin, name);
-        cout<<"Enter price: Rs.";
-        cin>>price;
+        cout << "Enter price: Rs.";
+        cin >> price;
         available = true;
     }
     
-    void displayItem(){
-        cout<<id<<". "<<name<<" - Rs."<<price;
-        cout<<" ("<<(available ? "Available" : "Out of Stock")<<")"<<endl;
+    void displayItem() const {
+        cout << id << ". " << name << " - Rs." << price;
+        cout << " (" << (available ? "Available" : "Out of Stock") << ")" << endl;
     }
     
-    void updateItem(){
-        cout<<"Current details:"<<endl;
+    void updateItem() {
+        cout << "Current details:" << endl;
         displayItem();
         float newPrice;
-        cout<<"Enter new price: Rs.";
-        while(!(cin >> newPrice)){
-            cout<<"Invalid input. Please enter a number: Rs.";
+        cout << "Enter new price: Rs.";
+        while(!(cin >> newPrice)) {
+            cout << "Invalid input. Please enter a number: Rs.";
             cin.clear();
+            cin.ignore(10000, '\n');
         }
         price = newPrice;
-        cout<<"Item updated successfully!"<<endl;
+        cout << "Item updated successfully!" << endl;
     }
     
-    int getId(){ 
+    // Setters and getters
+    void setAvailability(bool status) {
+        available = status;
+    }
+    
+    int getId() const { 
         return id; 
     }    
-    string getName(){ 
+    
+    string getName() const { 
         return name; 
     }
-    float getPrice(){ 
+    
+    float getPrice() const { 
         return price; 
     }
-    bool isAvailable(){ 
+    
+    bool isAvailable() const { 
         return available; 
     }
 };
 
-
-
-class Order{
+// OrderItem class to represent items in an order
+class OrderItem {
 private:
-    static const int maxItems = 10;
-    string items[maxItems];
-    float prices[maxItems];
-    int quantities[maxItems];
-    int itemCount;
-    float totalAmount;
-    string customerAddress;
-    string paymentMethod;
+    string name;
+    float price;
+    int quantity;
     
 public:
-    Order(){
-        itemCount = 0;
-        totalAmount = 0;
+    OrderItem() : name(""), price(0), quantity(0) {}
+    
+    OrderItem(const string& itemName, float itemPrice, int itemQuantity)
+        : name(itemName), price(itemPrice), quantity(itemQuantity) {}
+    
+    float getTotalPrice() const {
+        return price * quantity;
     }
     
-    void addOrderItem(string name, float price, int quantity){
-        if(itemCount<maxItems){
-            items[itemCount] = name;
-            prices[itemCount] = price;
-            quantities[itemCount] = quantity;
-            totalAmount += price*quantity;
-            itemCount++;
-        }
+    void display() const {
+        cout << name << " x" << quantity << " - Rs." << getTotalPrice() << endl;
     }
     
-    void setDeliveryInfo(){
-        cout<<"Enter delivery address: ";
-        cin.ignore();
-        getline(cin, customerAddress);
-        
-        cout<<"Select payment method:"<<endl;
-        cout<<"1. Cash on Delivery"<<endl;
-        cout<<"2. Credit Card"<<endl;
-        int choice;
-        do {
-            cout<<"Enter choice (1-3): ";
-            cin>>choice;
-            switch(choice){
-                case 1: 
-                    paymentMethod = "Cash on Delivery"; 
-                    break;
-                case 2: 
-                    paymentMethod = "Credit Card"; 
-                    break;
-                default: 
-                    cout<<"Invalid choice!"<<endl;
-            }
-        } while(choice<1 || choice>3);
+    string getName() const {
+        return name;
     }
     
-    void displayOrderSummary(){
-        cout<<"=== Order Summary ==="<<endl;
-        for(int i=0; i<itemCount; i++) {
-            cout<<items[i]<<" x"<<quantities[i]<<" - Rs."<<prices[i]*quantities[i]<<endl;
-        }
-        cout<<"------------------------"<<endl;
-        cout<<"Total Amount: Rs."<<totalAmount<<endl;
-        cout<<"Delivery Address: "<<customerAddress<<endl;
-        cout<<"Payment Method: "<<paymentMethod<<endl;
+    float getPrice() const {
+        return price;
+    }
+    
+    int getQuantity() const {
+        return quantity;
     }
 };
 
-class Restaurant{
+// PaymentType enum for different payment methods
+enum PaymentType {
+    CASH_ON_DELIVERY,
+    CREDIT_CARD
+};
+
+// Payment class combines all payment methods
+class Payment {
 private:
-    static const int maxItems = 50;
-    Item menu[maxItems];
+    PaymentType type;
+    string cardNumber;  // Only used for credit card
+    
+public:
+    Payment() : type(CASH_ON_DELIVERY), cardNumber("") {}
+    
+    Payment(PaymentType payType, const string& card = "") 
+        : type(payType), cardNumber(card) {}
+    
+    string getMethod() const {
+        if (type == CASH_ON_DELIVERY) {
+            return "Cash on Delivery";
+        } else if (type == CREDIT_CARD) {
+            return "Credit Card";
+        }
+        return "Unknown";
+    }
+    
+    bool processPayment(float amount) {
+        if (type == CASH_ON_DELIVERY) {
+            cout << "Payment of Rs." << amount << " will be collected upon delivery." << endl;
+            return true;
+        } else if (type == CREDIT_CARD) {
+            cout << "Processing payment of Rs." << amount << " with card ending in " 
+                 << cardNumber.substr(cardNumber.length() - 4) << endl;
+            return true;
+        }
+        return false;
+    }
+};
+
+// Order class to handle orders
+class Order {
+private:
+    static const int MAX_ITEMS = 10;
+    OrderItem items[MAX_ITEMS];
+    int itemCount;
+    string customerAddress;
+    Payment payment;
+    
+public:
+    Order() : itemCount(0), customerAddress("") {}
+    
+    bool addOrderItem(const string& name, float price, int quantity) {
+        if (itemCount >= MAX_ITEMS) {
+            cout << "Cannot add more items to this order." << endl;
+            return false;
+        }
+        
+        items[itemCount] = OrderItem(name, price, quantity);
+        itemCount++;
+        return true;
+    }
+    
+    void setDeliveryInfo(const string& address) {
+        customerAddress = address;
+    }
+    
+    void setPaymentMethod(PaymentType type, const string& cardNumber = "") {
+        payment = Payment(type, cardNumber);
+    }
+    
+    float getTotalAmount() const {
+        float total = 0;
+        for (int i = 0; i < itemCount; i++) {
+            total += items[i].getTotalPrice();
+        }
+        return total;
+    }
+    
+    bool processPayment() {
+        return payment.processPayment(getTotalAmount());
+    }
+    
+    void displayOrderSummary() const {
+        cout << "=== Order Summary ===" << endl;
+        for (int i = 0; i < itemCount; i++) {
+            items[i].display();
+        }
+        cout << "------------------------" << endl;
+        cout << "Total Amount: Rs." << getTotalAmount() << endl;
+        cout << "Delivery Address: " << customerAddress << endl;
+        cout << "Payment Method: " << payment.getMethod() << endl;
+    }
+};
+
+// Restaurant class to manage menu and orders
+class Restaurant {
+private:
+    static const int MAX_ITEMS = 50;
+    Item menu[MAX_ITEMS];
     int itemCount;
     
-    void initializeDefaultMenu(){
+    void initializeDefaultMenu() {
         menu[0] = Item(1, "Margherita Pizza", 299.00);
         menu[1] = Item(2, "Chicken Burger", 199.00);
         menu[2] = Item(3, "French Fries", 99.00);
@@ -149,141 +262,220 @@ private:
         menu[7] = Item(8, "Pasta", 199.00);
         menu[8] = Item(9, "Green Salad", 129.00);
         menu[9] = Item(10, "Coffee", 89.00);
-        itemCount = 10; 
+        itemCount = 10;
     }
     
 public:
-    Restaurant(){
+    Restaurant() : itemCount(0) {
         initializeDefaultMenu();
     }
     
-    void addMenuItem(){
-        if(itemCount<maxItems){
-            menu[itemCount].addItem(itemCount + 1);
-            itemCount++;
-            cout<<"Item added successfully!"<<endl;
-        } else{
-            cout<<"Menu is full!"<<endl;
+    bool addMenuItem() {
+        if (itemCount >= MAX_ITEMS) {
+            cout << "Menu is full!" << endl;
+            return false;
         }
+        
+        menu[itemCount].addItem(itemCount + 1);
+        itemCount++;
+        cout << "Item added successfully!" << endl;
+        return true;
     }
 
-    void displayMenu(){
-        cout<<"=== Our Menu ==="<<endl;
-        cout<<"----------------------------------------"<<endl;
+    void displayMenu() const {
+        cout << "=== Our Menu ===" << endl;
+        cout << "----------------------------------------" << endl;
         
-        cout<<"Regular Menu:"<<endl;
-        for(int i=0; i<10; i++){  
+        cout << "Regular Menu:" << endl;
+        for (int i = 0; i < 10 && i < itemCount; i++) {  
             menu[i].displayItem();
         }
         
-        if(itemCount>10){
-            cout<<"Special Items:"<<endl;
-            for(int i=10; i<itemCount; i++){
+        if (itemCount > 10) {
+            cout << "Special Items:" << endl;
+            for (int i = 10; i < itemCount; i++) {
                 menu[i].displayItem();
             }
         }
-        cout<<"----------------------------------------"<<endl;
+        cout << "----------------------------------------" << endl;
     }
     
-    void updateItem(){
+    void updateItem() {
         displayMenu();
         int id;
-        cout<<"Enter item ID to update: ";
-        while(!(cin>>id)){
-            cout<<"Invalid input. Please enter a number: ";
+        cout << "Enter item ID to update: ";
+        while (!(cin >> id)) {
+            cout << "Invalid input. Please enter a number: ";
             cin.clear();
-            cin.ignore();
+            cin.ignore(10000, '\n');
         }
         
         bool found = false;
-        for (int i=0; i<itemCount; i++){
-            if(menu[i].getId() == id){
+        for (int i = 0; i < itemCount; i++) {
+            if (menu[i].getId() == id) {
                 menu[i].updateItem();
                 found = true;
                 break;
             }
         }
-        if(!found){
-            cout<<"Item not found!"<<endl;
+        if (!found) {
+            cout << "Item not found!" << endl;
         }
     }
     
-    void deleteItem(){
+    void deleteItem() {
         displayMenu();
         int id;
-        cout<<"Enter item ID to delete: ";
-        cin>>id;
+        cout << "Enter item ID to delete: ";
+        cin >> id;
         
-        if(id<= 0){
-            cout<<"Cannot delete items from regular menu!"<<endl;
+        if (id <= 10) {
+            cout << "Cannot delete items from regular menu!" << endl;
             return;
         }
         
-        for(int i=0; i<itemCount; i++){
+        int foundIndex = -1;
+        for (int i = 0; i < itemCount; i++) {
             if (menu[i].getId() == id) {
-                for (int j=i; j<itemCount - 1; j++){
-                    menu[j] = menu[j + 1];
-                }
-                itemCount--;
-                cout<<"Item deleted successfully!"<<endl;
-                return;
+                foundIndex = i;
+                break;
             }
         }
-        cout<<"Item not found!"<<endl;
+        
+        if (foundIndex != -1) {
+            // Shift all items down to fill the gap
+            for (int i = foundIndex; i < itemCount - 1; i++) {
+                menu[i] = menu[i + 1];
+            }
+            itemCount--;
+            cout << "Item deleted successfully!" << endl;
+        } else {
+            cout << "Item not found!" << endl;
+        }
     }
     
-    Order* placeOrder(){
+    Order* placeOrder(const string& customerAddress) {
         Order* newOrder = new Order();
         char addMore;
         
-        do{
+        do {
             displayMenu();
             int id, quantity;
-            cout<<"Enter item ID to order: ";
-            cin>>id;
+            cout << "Enter item ID to order: ";
+            cin >> id;
             
             bool found = false;
-            for(int i=0; i<itemCount; i++){
-                if(menu[i].getId() == id && menu[i].isAvailable()){
-                    cout<<"Enter quantity: ";
-                    cin>>quantity;
+            for (int i = 0; i < itemCount; i++) {
+                if (menu[i].getId() == id && menu[i].isAvailable()) {
+                    cout << "Enter quantity: ";
+                    cin >> quantity;
                     newOrder->addOrderItem(menu[i].getName(), menu[i].getPrice(), quantity);
                     found = true;
                     break;
                 }
             }
             
-            if(!found){
-                cout<<"Item not found or not available!"<<endl;
+            if (!found) {
+                cout << "Item not found or not available!" << endl;
             }
             
-            cout<<"Add more items? (y/n): ";
-            cin>>addMore;
-        } while(addMore == 'y' || addMore == 'Y');
+            cout << "Add more items? (y/n): ";
+            cin >> addMore;
+        } while (addMore == 'y' || addMore == 'Y');
         
-        newOrder->setDeliveryInfo();
+        newOrder->setDeliveryInfo(customerAddress);
         return newOrder;
     }
 };
 
-class FoodOrderSystem{
+// Authentication manager class
+class AuthManager {
 private:
-    Restaurant restaurant;
+    static const int MAX_USERS = 10;
+    Owner owners[MAX_USERS];
+    int ownerCount;
+    Customer customers[MAX_USERS];
+    int customerCount;
     
 public:
-    void ownerMenu(){
+    AuthManager() : ownerCount(0), customerCount(0) {
+        // Add default owner
+        owners[0] = Owner("admin", "owner123");
+        ownerCount = 1;
+    }
+    
+    User* login(const string& role) {
+        string username, password;
+        cout << "--- " << role << " Login ---" << endl;
+        cout << "Enter username: ";
+        cin >> username;
+        cout << "Enter password: ";
+        cin >> password;
+        
+        if (role == "Owner") {
+            for (int i = 0; i < ownerCount; i++) {
+                if (owners[i].getUsername() == username && owners[i].authenticate(password)) {
+                    return &owners[i];
+                }
+            }
+        } else if (role == "Customer") {
+            for (int i = 0; i < customerCount; i++) {
+                if (customers[i].getUsername() == username && customers[i].authenticate(password)) {
+                    return &customers[i];
+                }
+            }
+        }
+        return nullptr;
+    }
+    
+    Customer* registerCustomer() {
+        if (customerCount >= MAX_USERS) {
+            cout << "Maximum number of customers reached." << endl;
+            return nullptr;
+        }
+        
+        string username, password, address;
+        cout << "--- Customer Registration ---" << endl;
+        cout << "Enter username: ";
+        cin >> username;
+        cout << "Enter password: ";
+        cin >> password;
+        cin.ignore();
+        cout << "Enter address: ";
+        getline(cin, address);
+        
+        customers[customerCount] = Customer(username, password, address);
+        customerCount++;
+        return &customers[customerCount - 1];
+    }
+};
+
+// FoodOrderSystem class to manage the whole system
+class FoodOrderSystem {
+private:
+    Restaurant restaurant;
+    AuthManager authManager;
+    
+public:
+    void ownerMenu() {
+        User* user = authManager.login("Owner");
+        if (!user) {
+            cout << "Login failed!" << endl;
+            return;
+        }
+        
         int choice;
         do {
-            cout<<"=== Owner Menu ==="<<endl;
-            cout<<"Enter 1 to Add Item"<<endl;
-            cout<<"Enter 2 to Display Menu"<<endl;
-            cout<<"Enter 3 to Update Item"<<endl;
-            cout<<"Enter 4 to Delete Item"<<endl;
-            cout<<"Enter 5 to Exit"<<endl;
-            cout<<"Enter choice: ";
-            cin>>choice;
+            cout << "=== Owner Menu ===" << endl;
+            cout << "Enter 1 to Add Item" << endl;
+            cout << "Enter 2 to Display Menu" << endl;
+            cout << "Enter 3 to Update Item" << endl;
+            cout << "Enter 4 to Delete Item" << endl;
+            cout << "Enter 5 to Exit" << endl;
+            cout << "Enter choice: ";
+            cin >> choice;
             
-            switch(choice){
+            switch (choice) {
                 case 1: 
                     restaurant.addMenuItem(); 
                     break;
@@ -297,69 +489,125 @@ public:
                     restaurant.deleteItem(); 
                     break;
                 case 5: 
-                    cout<<"Exiting..."<<endl; 
+                    cout << "Exiting..." << endl; 
                     break;
                 default: 
-                    cout<<"Invalid choice!"<<endl;
+                    cout << "Invalid choice!" << endl;
             }
-        } while(choice != 5);
+        } while (choice != 5);
     }
     
-    void customerMenu(){
+    void customerMenu() {
+        Customer* customer = nullptr;
+        string address;
+        
+        cout << "1. Login" << endl;
+        cout << "2. Register" << endl;
+        int loginChoice;
+        cout << "Enter choice: ";
+        cin >> loginChoice;
+        
+        if (loginChoice == 1) {
+            User* user = authManager.login("Customer");
+            if (!user) {
+                cout << "Login failed!" << endl;
+                return;
+            }
+            // We know it's a Customer since we asked for "Customer" role
+            customer = (Customer*)user;
+            address = customer->getAddress();
+        } else {
+            customer = authManager.registerCustomer();
+            if (!customer) {
+                return;
+            }
+            address = customer->getAddress();
+        }
+        
         int choice;
-        do{
-            cout<<"=== Customer Menu ==="<<endl;
-            cout<<"Enter 1 to View Menu"<<endl;
-            cout<<"Enter 2 to Place Order"<<endl;
-            cout<<"Enter 3 to Exit"<<endl;
-            cout<<"Enter choice: ";
-            cin>>choice;
+        cout << "Welcome, " << customer->getUsername() << "! You now have access to the customer menu.\n";
+        do {
+            cout << "=== Customer Menu ===" << endl;
+            cout << "Enter 1 to View Menu" << endl;
+            cout << "Enter 2 to Place Order" << endl;
+            cout << "Enter 3 to Exit" << endl;
+            cout << "Enter choice: ";
+            cin >> choice;
             
-            switch(choice){
+            switch (choice) {
                 case 1:
                     restaurant.displayMenu();
                     break;
-                case 2: 
-                    Order* order = restaurant.placeOrder();
+                case 2: {
+                    Order* order = restaurant.placeOrder(address);
+                    
+                    // Select payment method
+                    cout << "Select payment method:" << endl;
+                    cout << "1. Cash on Delivery" << endl;
+                    cout << "2. Credit Card" << endl;
+                    int paymentChoice;
+                    do {
+                        cout << "Enter choice (1-2): ";
+                        cin >> paymentChoice;
+                        
+                        if (paymentChoice == 1) {
+                            order->setPaymentMethod(CASH_ON_DELIVERY);
+                            break;
+                        } else if (paymentChoice == 2) {
+                            string cardNumber;
+                            cout << "Enter credit card number: ";
+                            cin >> cardNumber;
+                            order->setPaymentMethod(CREDIT_CARD, cardNumber);
+                            break;
+                        } else {
+                            cout << "Invalid choice!" << endl;
+                        }
+                    } while (true);
+                    
+                    order->processPayment();
                     order->displayOrderSummary();
                     delete order;
                     break;
+                }
                 case 3:
-                    cout<<"Thank you for visiting!"<<endl;
+                    cout << "Thank you for visiting!" << endl;
                     break;
                 default:
-                    cout<<"Invalid choice!"<<endl;
+                    cout << "Invalid choice!" << endl;
             }
-        } while(choice != 3);
+        } while (choice != 3);
+    }
+    
+    void run() {
+        int choice;
+        
+        do {
+            cout << "=== Food Ordering System ===" << endl;
+            cout << "Enter 1 to login as Owner" << endl;
+            cout << "Enter 2 to continue as Customer" << endl;
+            cout << "Enter 3 to Exit" << endl;
+            cout << "Enter choice: ";
+            cin >> choice;
+            
+            switch (choice) {
+                case 1:
+                    ownerMenu();
+                    break;
+                case 2:
+                    customerMenu();
+                    break;
+                case 3:
+                    cout << "Thank You!" << endl;
+                    break;
+                default:
+                    cout << "Invalid choice!" << endl;
+            }
+        } while (choice != 3);
     }
 };
 
-int main(){
+int main() {
     FoodOrderSystem system;
-    int choice;
-    
-    do {
-        cout<<"=== Food Ordering System ==="<<endl;
-        cout<<"Enter 1 to login as Owner"<<endl;
-        cout<<"Enter 2 to signup as Customer"<<endl;
-        cout<<"Enter 3 to Exit"<<endl;
-        cout<<"Enter choice: ";
-        cin>>choice;
-        
-        switch(choice){
-            case 1:
-                system.ownerMenu();
-                break;
-            case 2:
-                system.customerMenu();
-                break;
-            case 3:
-                cout<<"Thank You!"<<endl;
-                break;
-            default:
-                cout<<"Invalid choice!"<<endl;
-        }
-    } while(choice != 3);
-    
+    system.run();
     return 0;
 }
