@@ -2,7 +2,6 @@
 #include <string>
 using namespace std;
 
-// User class for authentication
 class User {
 protected:
     string username;
@@ -22,7 +21,6 @@ public:
     }
 };
 
-// Owner class inherits from User
 class Owner : public User {
 public:
     Owner() : User() {}
@@ -30,7 +28,6 @@ public:
     Owner(const string& username, const string& password) : User(username, password) {}
 };
 
-// Customer class inherits from User
 class Customer : public User {
 private:
     string address;
@@ -50,7 +47,6 @@ public:
     }
 };
 
-// Item class to represent menu items
 class Item {
 private:
     int id;
@@ -93,7 +89,6 @@ public:
         cout << "Item updated successfully!" << endl;
     }
     
-    // Setters and getters
     void setAvailability(bool status) {
         available = status;
     }
@@ -115,7 +110,6 @@ public:
     }
 };
 
-// OrderItem class to represent items in an order
 class OrderItem {
 private:
     string name;
@@ -149,38 +143,36 @@ public:
     }
 };
 
-// PaymentType enum for different payment methods
 enum PaymentType {
-    CASH_ON_DELIVERY,
-    CREDIT_CARD
+    cashOnDelivery,
+    creditCard
 };
 
-// Payment class combines all payment methods
 class Payment {
 private:
     PaymentType type;
-    string cardNumber;  // Only used for credit card
+    string cardNumber; 
     
 public:
-    Payment() : type(CASH_ON_DELIVERY), cardNumber("") {}
+    Payment() : type(cashOnDelivery), cardNumber("") {}
     
     Payment(PaymentType payType, const string& card = "") 
         : type(payType), cardNumber(card) {}
     
     string getMethod() const {
-        if (type == CASH_ON_DELIVERY) {
+        if (type == cashOnDelivery) {
             return "Cash on Delivery";
-        } else if (type == CREDIT_CARD) {
+        } else if (type == creditCard) {
             return "Credit Card";
         }
         return "Unknown";
     }
     
     bool processPayment(float amount) {
-        if (type == CASH_ON_DELIVERY) {
+        if (type == cashOnDelivery) {
             cout << "Payment of Rs." << amount << " will be collected upon delivery." << endl;
             return true;
-        } else if (type == CREDIT_CARD) {
+        } else if (type == creditCard) {
             cout << "Processing payment of Rs." << amount << " with card ending in " 
                  << cardNumber.substr(cardNumber.length() - 4) << endl;
             return true;
@@ -189,11 +181,10 @@ public:
     }
 };
 
-// Order class to handle orders
 class Order {
 private:
-    static const int MAX_ITEMS = 10;
-    OrderItem items[MAX_ITEMS];
+    static const int maxItems = 10;
+    OrderItem items[maxItems];
     int itemCount;
     string customerAddress;
     Payment payment;
@@ -202,7 +193,7 @@ public:
     Order() : itemCount(0), customerAddress("") {}
     
     bool addOrderItem(const string& name, float price, int quantity) {
-        if (itemCount >= MAX_ITEMS) {
+        if (itemCount >= maxItems) {
             cout << "Cannot add more items to this order." << endl;
             return false;
         }
@@ -244,11 +235,10 @@ public:
     }
 };
 
-// Restaurant class to manage menu and orders
 class Restaurant {
 private:
-    static const int MAX_ITEMS = 50;
-    Item menu[MAX_ITEMS];
+    static const int maxItems = 50;
+    Item menu[maxItems];
     int itemCount;
     
     void initializeDefaultMenu() {
@@ -271,7 +261,7 @@ public:
     }
     
     bool addMenuItem() {
-        if (itemCount >= MAX_ITEMS) {
+        if (itemCount >= maxItems) {
             cout << "Menu is full!" << endl;
             return false;
         }
@@ -343,7 +333,6 @@ public:
         }
         
         if (foundIndex != -1) {
-            // Shift all items down to fill the gap
             for (int i = foundIndex; i < itemCount - 1; i++) {
                 menu[i] = menu[i + 1];
             }
@@ -388,18 +377,16 @@ public:
     }
 };
 
-// Authentication manager class
 class AuthManager {
 private:
-    static const int MAX_USERS = 10;
-    Owner owners[MAX_USERS];
+    static const int maxUsers = 10;
+    Owner owners[maxUsers];
     int ownerCount;
-    Customer customers[MAX_USERS];
+    Customer customers[maxUsers];
     int customerCount;
     
 public:
     AuthManager() : ownerCount(0), customerCount(0) {
-        // Add default owner
         owners[0] = Owner("admin", "owner123");
         ownerCount = 1;
     }
@@ -429,7 +416,7 @@ public:
     }
     
     Customer* registerCustomer() {
-        if (customerCount >= MAX_USERS) {
+        if (customerCount >= maxUsers) {
             cout << "Maximum number of customers reached." << endl;
             return nullptr;
         }
@@ -450,7 +437,6 @@ public:
     }
 };
 
-// FoodOrderSystem class to manage the whole system
 class FoodOrderSystem {
 private:
     Restaurant restaurant;
@@ -513,7 +499,6 @@ public:
                 cout << "Login failed!" << endl;
                 return;
             }
-            // We know it's a Customer since we asked for "Customer" role
             customer = (Customer*)user;
             address = customer->getAddress();
         } else {
@@ -541,7 +526,6 @@ public:
                 case 2: {
                     Order* order = restaurant.placeOrder(address);
                     
-                    // Select payment method
                     cout << "Select payment method:" << endl;
                     cout << "1. Cash on Delivery" << endl;
                     cout << "2. Credit Card" << endl;
@@ -551,13 +535,13 @@ public:
                         cin >> paymentChoice;
                         
                         if (paymentChoice == 1) {
-                            order->setPaymentMethod(CASH_ON_DELIVERY);
+                            order->setPaymentMethod(cashOnDelivery);
                             break;
                         } else if (paymentChoice == 2) {
                             string cardNumber;
                             cout << "Enter credit card number: ";
                             cin >> cardNumber;
-                            order->setPaymentMethod(CREDIT_CARD, cardNumber);
+                            order->setPaymentMethod(creditCard, cardNumber);
                             break;
                         } else {
                             cout << "Invalid choice!" << endl;
