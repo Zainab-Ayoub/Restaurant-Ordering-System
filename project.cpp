@@ -83,7 +83,7 @@ public:
         while(!(cin >> newPrice)) {
             cout << "Invalid input. Please enter a number: Rs.";
             cin.clear();
-            cin.ignore(10000, '\n');
+            cin.ignore();
         }
         price = newPrice;
         cout << "Item updated successfully!" << endl;
